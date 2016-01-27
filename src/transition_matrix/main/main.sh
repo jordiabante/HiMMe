@@ -2,4 +2,6 @@
 
 rm -rf out
 
-../transition_matrix.sh -t 4 -k 1 -d out -- test.fa
+set -x
+../transition_matrix.sh -k 1 -d out -- test.fa
+../transition_matrix.sh -k 2 -d out -- test.fa

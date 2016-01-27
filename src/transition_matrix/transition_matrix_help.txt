@@ -7,14 +7,12 @@ Usage:
 Options:
     -h|--help           Help.
     -d|--outdir         Output directory. Default: $PWD.
-    -t|--threads        Threads used. Default: 2.
     -k|--kmer_size      K-mer size used. Default: 2.
 
 Examples:
-    transition_matrix.sh -t 4 -k 1 -d out -- test.fa
+    transition_matrix.sh -k 3 -d out -- test.fa
 
 Dependancies:
-    transition_matrix.pl
     perl{Algorithm::Combinatorics}
 
 Upstream:

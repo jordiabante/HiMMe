@@ -90,7 +90,7 @@ input="$1"
 input_basename="$(basename "$input")"
 prefix="${input_basename%%.*}"
 tempfile="${outdir}/${prefix}"
-outfile="${outdir}/${prefix}.txt.gz"
+outfile="${outdir}/${prefix}_tm${kmer_size}.txt.gz"
 
 # Output directory
 mkdir -p "$outdir"
