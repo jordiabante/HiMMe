@@ -2,7 +2,7 @@
 # ------------------------------------------------------------------------------
 ##The MIT License (MIT)
 ##
-##Copyright (c) 2015 Jordi Abante
+##Copyright (c) 2016 Jordi Abante
 ##
 ##Permission is hereby granted, free of charge, to any person obtaining a copy
 ##of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@ my $elapsed_time=0;             # Time elapsed
 my %fasta_hash=();              # Hash containing sequence info of each sample
 my %transition_hash=();         # Hash containing duplets combinations
 
-######################################### Main ######################################
+################################ Main #########################################
 
 # Read in fasta file
 $st_time = localtime;
@@ -67,7 +67,7 @@ $current_time = localtime;
 print STDERR "${current_time}: Saving Markov matrix in...\n";
 print_markov_matrices();
 
-########################################### Subs ######################################
+############################### Subs ##########################################
 ## Fill the markov matrix
 sub fill_markov_matrix
 {
@@ -90,7 +90,6 @@ sub fill_markov_matrix
 		    my $col=$transition_hash{$seq_2};
 		    # Fill markov_matrix
 		    $markov_matrix[$row][$col]+=1; 
-		    #print STDERR "$first_codon\t$second_codon\n";
 		}
 		# Scale matrix
 		my $sum;
@@ -206,4 +205,4 @@ sub print_markov_matrices
 	}
 }
 
-###########################################################################################
+##############################################################################
