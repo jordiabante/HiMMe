@@ -37,7 +37,7 @@ if [ $# -eq 0 ]
         exit 1
 fi
 
-TEMP=$(getopt -o hd:t: -l help,outdir:,threads: -n "$script_name.sh" -- "$@")
+TEMP=$(getopt -o hd:t:k: -l help,outdir:,threads:,kmer_size: -n "$script_name.sh" -- "$@")
 
 if [ $? -ne 0 ] 
 then
@@ -50,6 +50,7 @@ eval set -- "$TEMP"
 # Defaults
 outdir="$PWD"
 threads=2
+kmer_size=1
 
 # Options
 while true
@@ -65,6 +66,10 @@ do
       ;;  
     -t|--threads)
       threads="$2"
+      shift 2
+      ;;  
+    -k|--kmer_size)
+      kmer_size="$2"
       shift 2
       ;;  
     --) 
@@ -91,5 +96,5 @@ outfile="${outdir}/${prefix}.txt.gz"
 mkdir -p "$outdir"
 
 # Run
-"$perl_script" "$input" "$outfile" "$kmer_size" 
+"$perl_script" "$input" "$kmer_size" | gzip > "$outfile"
 

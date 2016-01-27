@@ -25,15 +25,12 @@
 
 # Libraries
 use strict;
-use DateTime;
 use Algorithm::Combinatorics qw(combinations variations_with_repetition);
-use Math::Matrix;                       # Matrix operations
 
 # Read arguments
 my $scriptname = $0;            # Get script name
 my $fasta_file = @ARGV[0];      # Get target FASTA file name
-my $outfile = @ARGV[1];      	# Get output prefix
-my $kmer_size= @ARGV[2];        # Get user k-mer size
+my $kmer_size= @ARGV[1];        # Get user k-mer size
 
 # Variables
 my $dim=1;                      # Dimension P (based on k-mer size)
@@ -52,26 +49,30 @@ my %transition_hash=();         # Hash containing duplets combinations
 ######################################### Main ######################################
 
 # Read in fasta file
-$st_time = DateTime->now();
-print STDERR "${st_time}:Reading fasta ...\n";
+$st_time = localtime;
+print STDERR "${st_time}: Reading fasta ...\n";
 read_fasta();
 #print_fasta();
 
 # Initialize Markov matrices
-$current_time = DateTime->now();
-print STDERR "${current_time}:Initializing Markov matrix ...\n";
+$current_time = localtime;
+print STDERR "${current_time}: Initializing Markov matrix ...\n";
 initialize();
-#fill_markov_matrix();
+$current_time = localtime;
+print STDERR "${current_time}: Learning Markov matrix ...\n";
+fill_markov_matrix();
 
 # Print stuff
-#save_markov_matrices();
+$current_time = localtime;
+print STDERR "${current_time}: Saving Markov matrix in...\n";
+print_markov_matrices();
 
 ########################################### Subs ######################################
 ## Fill the markov matrix
 sub fill_markov_matrix
 {
 	# Get chromosomes from fasta
-	my @chormosomes=keys %fasta_hash;
+	my @chromosomes=keys %fasta_hash;
 	foreach my $chromosome (@chromosomes)
 	{
 		for(my $i=0;$i<=(scalar @{$fasta_hash{$chromosome}})-2*$kmer_size;$i++)
@@ -117,7 +118,7 @@ sub fill_markov_matrix
 sub initialize
 {
 	# Nucleotides taken into consideration
-	my @nucleotides=('A','C','T','G');
+	my @nucleotides=('A','C','T','G','-');
 	for(my $i=1;$i<=$kmer_size;$i++)
 	{
 		$dim*=(scalar @nucleotides);
@@ -134,14 +135,13 @@ sub initialize
 		my $sequence = join('', @{$combination}[0..$length]);
 		$transition_hash{$sequence}=$i;
 		$i++;
-		} 
-		# Initialize markov_matrix
-		for(my $i=0;$i<=$dim;$i++)
+	} 
+	# Initialize markov_matrix
+	for(my $i=0;$i<=$dim;$i++)
+	{
+	    for(my $j=0;$j<=$dim;$j++)
 		{
-		    for(my $j=0;$j<=$dim;$j++)
-		    {
 			$markov_matrix[$i][$j]=0;
-		    }
 		}
 	}
 }
@@ -149,20 +149,19 @@ sub initialize
 ## Read in fasta file
 sub read_fasta
 {
-	my $chromosome;
+    my $chromosome;
 	open(my $FH, $fasta_file) or die "Could not open file '$fasta_file' $!";
 	while( my $line = <$FH>)
 	{   
 		chomp($line);
 		if( $line =~ />/)
 		{   
-		    $chromosome=substr($line,1); # Get rid of leading ">" character
-		    $fasta_hash{$chromosome}="";
+            $chromosome=substr($line,1); # Get rid of leading ">" character
 		}   
 		else
 		{   
 		    my @array = split //, $line;
-		    $fasta_hash{$chromosome} = [@array];
+		    push @{$fasta_hash{$chromosome}},@array;
 		}   
 	}   
 }
@@ -184,29 +183,27 @@ sub print_fasta
 }
 
 ## Save markov_matrices
-sub save_markov_matrices
+sub print_markov_matrices
 {
-	open(my $fh, '>', "$outfile");
 	# Reverse hash
 	my %reverse_hash = reverse %transition_hash;
-	print $fh "\t";
+	print STDOUT "\t";
 	for(my $j=0;$j<=$dim;$j++)
 	{
 	    my $key = $reverse_hash{$j};
-	    print $fh "$key\t";
+	    print STDOUT "$key\t";
 	}
-	print $fh "\n";
+	print STDOUT "\n";
 	for(my $i=0;$i<=$dim;$i++)
 	{   
 	    my $key = $reverse_hash{$i};
-	    print $fh "$key\t";
+	    print STDOUT "$key\t";
 	    for(my $j=0;$j<=$dim;$j++)
 	    {
-		printf $fh "%.3f\t", $markov_matrix[$i][$j];
+		printf STDOUT "%.3f\t", $markov_matrix[$i][$j];
 	    }
-	    print $fh "\n";
+	    print STDOUT "\n";
 	}
-	close $fh;
 }
 
 ###########################################################################################
