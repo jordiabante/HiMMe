@@ -35,6 +35,8 @@ my $kmer_size= @ARGV[1];        # Get user k-mer size
 # Variables
 my $dim=1;                      # Dimension P (based on k-mer size)
 my @markov_matrix=();           # 3D array [assembly][row][column]
+my $n_entries=0;                # Number of entries in the FASTA file
+my $n_proc=0;                   # Number of entries processed
 
 # Time stamps
 my $st_time=0;                  # Start time
@@ -72,18 +74,18 @@ print_markov_matrices();
 sub fill_markov_matrix
 {
 	# Get chromosomes from fasta
-	my @chromosomes=keys %fasta_hash;
-	foreach my $chromosome (@chromosomes)
+	my @entries=keys %fasta_hash;
+	foreach my $entry (@entries)
 	{
-		for(my $i=0;$i<=(scalar @{$fasta_hash{$chromosome}})-2*$kmer_size;$i++)
+		for(my $i=0;$i<=(scalar @{$fasta_hash{$entry}})-2*$kmer_size;$i++)
 		{
 		    # Get nucleotides of the iteration
-		    my $seq_1=@{$fasta_hash{$chromosome}}[$i];
-		    my $seq_2=@{$fasta_hash{$chromosome}}[$i+$kmer_size];
+		    my $seq_1=@{$fasta_hash{$entry}}[$i];
+		    my $seq_2=@{$fasta_hash{$entry}}[$i+$kmer_size];
 		    for(my $j=1;$j<$kmer_size;$j++)
 		    {
-			$seq_1=$seq_1.@{$fasta_hash{$chromosome}}[$i+$j];
-			$seq_2=$seq_2.@{$fasta_hash{$chromosome}}[$i+$kmer_size+$j];
+			$seq_1=$seq_1.@{$fasta_hash{$entry}}[$i+$j];
+			$seq_2=$seq_2.@{$fasta_hash{$entry}}[$i+$kmer_size+$j];
 		    }
 		    # Get codon index form markov_matrix
 		    my $row=$transition_hash{$seq_1};
@@ -91,26 +93,30 @@ sub fill_markov_matrix
 		    # Fill markov_matrix
 		    $markov_matrix[$row][$col]+=1; 
 		}
-		# Scale matrix
-		my $sum;
-		for(my $i=0;$i<=$dim;$i++)
-		{
-			$sum=0;
-			# Count mutations per row
-			for(my $j=0;$j<=$dim;$j++)
-			{
-				$sum+=$markov_matrix[$i][$j];
-			}
-			# Normalize each row
-			if($sum!=0)
-			{
-				for(my $j=0;$j<=$dim;$j++)
-				{
-					$markov_matrix[$i][$j]/=$sum;
-				}
-			}
-		}
-	}
+        $n_proc++;
+        my $perc=$n_proc/$n_entries*100;
+        printf STDERR "\rCurrent progress: %.2f%", $perc;
+    }
+    printf STDERR "\n";
+    # Scale matrix
+    my $sum;
+    for(my $i=0;$i<=$dim;$i++)
+    {
+        $sum=0;
+        # Count mutations per row
+        for(my $j=0;$j<=$dim;$j++)
+        {
+            $sum+=$markov_matrix[$i][$j];
+        }
+        # Normalize each row
+        if($sum!=0)
+        {
+            for(my $j=0;$j<=$dim;$j++)
+            {
+                $markov_matrix[$i][$j]/=$sum;
+            }
+        }
+    }
 }
 
 ## Initialize markov_matrices
@@ -156,6 +162,7 @@ sub read_fasta
 		if( $line =~ />/)
 		{   
             $chromosome=substr($line,1); # Get rid of leading ">" character
+            $n_entries++;
 		}   
 		else
 		{   
