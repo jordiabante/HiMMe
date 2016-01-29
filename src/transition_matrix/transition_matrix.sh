@@ -90,11 +90,14 @@ input="$1"
 input_basename="$(basename "$input")"
 prefix="${input_basename%%.*}"
 tempfile="${outdir}/${prefix}"
-outfile="${outdir}/${prefix}_tm${kmer_size}.txt"
+outfile="${outdir}/${prefix}_tm${kmer_size}.txt.gz"
 
 # Output directory
 mkdir -p "$outdir"
 
+# Count number of entries in FASTA
+n_entries="$(cat "$input" | grep "^>" | wc -l)"
+
 # Run
-"$perl_script" "$input" "$kmer_size" > "$outfile"
+"$perl_script" "$input" "$kmer_size" "$n_entries" "$outfile"
 

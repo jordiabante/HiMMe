@@ -31,12 +31,16 @@ use Algorithm::Combinatorics qw(combinations variations_with_repetition);
 my $scriptname = $0;            # Get script name
 my $fasta_file = @ARGV[0];      # Get target FASTA file name
 my $kmer_size= @ARGV[1];        # Get user k-mer size
+my $n_entries=@ARGV[2];         # Number of entries in the FASTA file
+my $outfile= @ARGV[3];          # Output file
 
 # Variables
+my $FASTA;                      # Fasta file handler
 my $dim=1;                      # Dimension P (based on k-mer size)
 my @markov_matrix=();           # 3D array [assembly][row][column]
-my $n_entries=0;                # Number of entries in the FASTA file
 my $n_proc=0;                   # Number of entries processed
+my $n_mem=0;                    # Number of entries stored in RAM
+my $n_limit=2500;               # Limit for number of entries in RAM
 
 # Time stamps
 my $st_time=0;                  # Start time
@@ -52,8 +56,7 @@ my %transition_hash=();         # Hash containing duplets combinations
 
 # Read in fasta file
 $st_time = localtime;
-print STDERR "${st_time}: Reading fasta ...\n";
-read_fasta();
+print STDERR "${st_time}: FASTA file:\n${fasta_file}\n";
 #print_fasta();
 
 # Markov matrices
@@ -73,32 +76,42 @@ print_markov_matrices();
 ## Fill the markov matrix
 sub fill_markov_matrix
 {
-	# Get chromosomes from fasta
-	my @entries=keys %fasta_hash;
-	foreach my $entry (@entries)
-	{
-		for(my $i=0;$i<=(scalar @{$fasta_hash{$entry}})-2*$kmer_size;$i++)
-		{
-		    # Get nucleotides of the iteration
-		    my $seq_1=@{$fasta_hash{$entry}}[$i];
-		    my $seq_2=@{$fasta_hash{$entry}}[$i+$kmer_size];
-		    for(my $j=1;$j<$kmer_size;$j++)
-		    {
-			$seq_1=$seq_1.@{$fasta_hash{$entry}}[$i+$j];
-			$seq_2=$seq_2.@{$fasta_hash{$entry}}[$i+$kmer_size+$j];
-		    }
-		    # Get codon index form markov_matrix
-		    my $row=$transition_hash{$seq_1};
-		    my $col=$transition_hash{$seq_2};
-		    # Fill markov_matrix
-		    $markov_matrix[$row][$col]+=1; 
-		}
-        # Get rid of that entry 
-        delete $fasta_hash{$entry};
-        # Update progress
-        $n_proc++;
-        my $perc=$n_proc/$n_entries*100;
-        printf STDERR "\rCurrent progress: %.2f%", $perc;
+    # Open FASTA file
+	open($FASTA, $fasta_file) or die "Could not open file '$fasta_file' $!";
+    # Process in chunks of n_limit
+	while($n_proc<$n_entries)
+    {
+        # Read n_lim entries
+        read_fasta();
+
+        # Get chromosomes from fasta
+        my @entries=keys %fasta_hash;
+        foreach my $entry (@entries)
+        {
+            for(my $i=0;$i<=(scalar @{$fasta_hash{$entry}})-2*$kmer_size;$i++)
+            {
+                # Get nucleotides of the iteration
+                my $seq_1=@{$fasta_hash{$entry}}[$i];
+                my $seq_2=@{$fasta_hash{$entry}}[$i+$kmer_size];
+                for(my $j=1;$j<$kmer_size;$j++)
+                {
+                $seq_1=$seq_1.@{$fasta_hash{$entry}}[$i+$j];
+                $seq_2=$seq_2.@{$fasta_hash{$entry}}[$i+$kmer_size+$j];
+                }
+                # Get codon index form markov_matrix
+                my $row=$transition_hash{$seq_1};
+                my $col=$transition_hash{$seq_2};
+                # Fill markov_matrix
+                $markov_matrix[$row][$col]+=1; 
+            }
+            # Get rid of that entry 
+            delete $fasta_hash{$entry};
+            $n_mem--;
+            # Update progress
+            $n_proc++;
+            my $perc=$n_proc/$n_entries*100;
+            printf STDERR "\rCurrent progress: %.2f%", $perc;
+        }
     }
     printf STDERR "\n";
     # Scale matrix
@@ -126,7 +139,7 @@ sub fill_markov_matrix
 sub initialize
 {
 	# Nucleotides taken into consideration
-	my @nucleotides=('A','C','T','G','-');
+	my @nucleotides=('A','C','T','G');
 	for(my $i=1;$i<=$kmer_size;$i++)
 	{
 		$dim*=(scalar @nucleotides);
@@ -157,20 +170,19 @@ sub initialize
 ## Read in fasta file
 sub read_fasta
 {
-    my $chromosome;
-	open(my $FH, $fasta_file) or die "Could not open file '$fasta_file' $!";
-	while( my $line = <$FH>)
+    my $entry;
+	while((my $line = <$FASTA>) and ($n_mem<=$n_limit))
 	{   
 		chomp($line);
 		if( $line =~ />/)
 		{   
-            $chromosome=substr($line,1); # Get rid of leading ">" character
-            $n_entries++;
+            $entry=substr($line,1); # Get rid of leading ">" character
+            $n_mem++;
 		}   
 		else
 		{   
 		    my @array = split //, $line;
-		    push @{$fasta_hash{$chromosome}},@array;
+		    push @{$fasta_hash{$entry}},@array;
 		}   
 	}   
 }
@@ -181,9 +193,9 @@ sub print_fasta
 	# Print output
 	foreach my $key (sort keys %fasta_hash)
 	{
-		my @chromosome=@{$fasta_hash{$key}};
+		my @entry=@{$fasta_hash{$key}};
 		print ">$key\n";
-		foreach my $nuc (@chromosome)
+		foreach my $nuc (@entry)
 		{
 		    print "$nuc";
 		}
@@ -194,25 +206,28 @@ sub print_fasta
 ## Print markov_matrices
 sub print_markov_matrices
 {
+    open(OUT, "|gzip -c > ${outfile}")            # $$ is our process id
+        or die "Can't open file '${outfile}' $!";
 	# Reverse hash
 	my %reverse_hash = reverse %transition_hash;
-	print STDOUT "\t";
+    # Print to OUT
+	print OUT "\t";
 	for(my $j=0;$j<=$dim;$j++)
 	{
 	    my $key = $reverse_hash{$j};
-	    print STDOUT "$key\t";
+	    print OUT "$key\t";
 	}
-	print STDOUT "\n";
+	print OUT "\n";
 	for(my $i=0;$i<=$dim;$i++)
 	{   
 	    my $key = $reverse_hash{$i};
-	    print STDOUT "$key\t";
+	    print OUT "$key\t";
 	    for(my $j=0;$j<=$dim;$j++)
 	    {
-		printf STDOUT "%.3f\t", $markov_matrix[$i][$j];
+		printf OUT "%.3f\t", $markov_matrix[$i][$j];
 	    }
-	    print STDOUT "\n";
+	    print OUT "\n";
 	}
+    close OUT;
 }
-
 ##############################################################################
