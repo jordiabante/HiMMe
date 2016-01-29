@@ -93,6 +93,9 @@ sub fill_markov_matrix
 		    # Fill markov_matrix
 		    $markov_matrix[$row][$col]+=1; 
 		}
+        # Get rid of that entry 
+        delete $fasta_hash{$entry};
+        # Update progress
         $n_proc++;
         my $perc=$n_proc/$n_entries*100;
         printf STDERR "\rCurrent progress: %.2f%", $perc;
@@ -103,7 +106,7 @@ sub fill_markov_matrix
     for(my $i=0;$i<=$dim;$i++)
     {
         $sum=0;
-        # Count mutations per row
+        # Count frequencies per row
         for(my $j=0;$j<=$dim;$j++)
         {
             $sum+=$markov_matrix[$i][$j];
@@ -188,7 +191,7 @@ sub print_fasta
 	}
 }
 
-## Save markov_matrices
+## Print markov_matrices
 sub print_markov_matrices
 {
 	# Reverse hash
