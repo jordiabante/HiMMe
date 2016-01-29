@@ -56,7 +56,7 @@ print STDERR "${st_time}: Reading fasta ...\n";
 read_fasta();
 #print_fasta();
 
-# Initialize Markov matrices
+# Markov matrices
 $current_time = localtime;
 print STDERR "${current_time}: Initializing Markov matrix ...\n";
 initialize();
@@ -66,7 +66,7 @@ fill_markov_matrix();
 
 # Print stuff
 $current_time = localtime;
-print STDERR "${current_time}: Saving Markov matrix in...\n";
+print STDERR "${current_time}: Saving Markov matrix ...\n";
 print_markov_matrices();
 
 ############################### Subs ##########################################

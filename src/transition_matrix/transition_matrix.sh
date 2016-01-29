@@ -90,11 +90,11 @@ input="$1"
 input_basename="$(basename "$input")"
 prefix="${input_basename%%.*}"
 tempfile="${outdir}/${prefix}"
-outfile="${outdir}/${prefix}_tm${kmer_size}.txt.gz"
+outfile="${outdir}/${prefix}_tm${kmer_size}.txt"
 
 # Output directory
 mkdir -p "$outdir"
 
 # Run
-"$perl_script" "$input" "$kmer_size" | gzip > "$outfile"
+"$perl_script" "$input" "$kmer_size" > "$outfile"
 
