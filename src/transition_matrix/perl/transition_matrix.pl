@@ -223,7 +223,7 @@ sub print_markov_matrices
 	    print OUT "$key\t";
 	    for(my $j=0;$j<=$dim;$j++)
 	    {
-		printf OUT "%.3f\t", $markov_matrix[$i][$j];
+		printf OUT "%.5f\t", $markov_matrix[$i][$j];
 	    }
 	    print OUT "\n";
 	}
