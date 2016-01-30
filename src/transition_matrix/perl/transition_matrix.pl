@@ -56,8 +56,7 @@ my %transition_hash=();         # Hash containing duplets combinations
 
 # Read in fasta file
 $st_time = localtime;
-print STDERR "${st_time}: FASTA file:\n${fasta_file}\n";
-#print_fasta();
+print STDERR "${st_time}: FASTA file: ${fasta_file}\n";
 
 # Markov matrices
 $current_time = localtime;
@@ -69,7 +68,7 @@ fill_markov_matrix();
 
 # Print stuff
 $current_time = localtime;
-print STDERR "${current_time}: Saving Markov matrix ...\n";
+print STDERR "${current_time}: Saving Markov matrix in ${outfile}...\n";
 print_markov_matrices();
 
 ############################### Subs ##########################################
@@ -88,15 +87,15 @@ sub fill_markov_matrix
         my @entries=keys %fasta_hash;
         foreach my $entry (@entries)
         {
-            for(my $i=0;$i<=(scalar @{$fasta_hash{$entry}})-2*$kmer_size;$i++)
+            for(my $i=0;$i<=(scalar @{$fasta_hash{$entry}})-2*$kmer_size;$i+=$kmer_size)
             {
                 # Get nucleotides of the iteration
                 my $seq_1=@{$fasta_hash{$entry}}[$i];
                 my $seq_2=@{$fasta_hash{$entry}}[$i+$kmer_size];
                 for(my $j=1;$j<$kmer_size;$j++)
                 {
-                $seq_1=$seq_1.@{$fasta_hash{$entry}}[$i+$j];
-                $seq_2=$seq_2.@{$fasta_hash{$entry}}[$i+$kmer_size+$j];
+                    $seq_1=$seq_1.@{$fasta_hash{$entry}}[$i+$j];
+                    $seq_2=$seq_2.@{$fasta_hash{$entry}}[$i+$kmer_size+$j];
                 }
                 # Get codon index form markov_matrix
                 my $row=$transition_hash{$seq_1};
