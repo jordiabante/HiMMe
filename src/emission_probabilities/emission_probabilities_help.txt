@@ -1,0 +1,26 @@
+Description:
+    Script to learn the transition matrix out of a FASTA file.
+
+Usage:
+    transition_matrix.sh  [options]  -- FASTA_FILE
+
+Options:
+    -h|--help           Help.
+    -d|--outdir         Output directory. Default: $PWD.
+    -k|--kmer_size      K-mer size used. Default: 2.
+
+Examples:
+    transition_matrix.sh -k 3 -d out -- test.fa
+
+Dependancies:
+    perl{Algorithm::Combinatorics}
+
+Upstream:
+    NA
+
+Date:
+    2016/01/27
+
+Author:
+    Jordi Abante <abante.jordi@gmail.com>
+    https://jordiabante.wordpress.com
