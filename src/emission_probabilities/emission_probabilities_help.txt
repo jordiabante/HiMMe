@@ -7,6 +7,7 @@ Usage:
 Options:
     -h|--help           Help.
     -d|--outdir         Output directory. Default: $PWD.
+    -b|--bases          Total number of bases. Default: 1,000,000.
 
 Examples:
     emission_probabilities.sh -d out -- test.vcf
