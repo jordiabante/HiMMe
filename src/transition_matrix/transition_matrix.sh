@@ -96,8 +96,8 @@ outfile="${outdir}/${prefix}_tm${kmer_size}.txt.gz"
 mkdir -p "$outdir"
 
 # Count number of entries in FASTA
-n_entries="$(cat "$input" | grep "^>" | wc -l)"
+n_entries="$(zcat -f "$input" | grep "^>" | wc -l)"
 
 # Run
-"$perl_script" "$input" "$kmer_size" "$n_entries" "$outfile"
+zcat -f "$input" | "$perl_script" "$input" "$kmer_size" "$n_entries" "$outfile"
 

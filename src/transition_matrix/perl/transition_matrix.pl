@@ -75,8 +75,6 @@ print_markov_matrices();
 ## Fill the markov matrix
 sub fill_markov_matrix
 {
-    # Open FASTA file
-	open($FASTA, $fasta_file) or die "Could not open file '$fasta_file' $!";
     # Process in chunks of n_limit
 	while($n_proc<$n_entries)
     {
@@ -170,7 +168,7 @@ sub initialize
 sub read_fasta
 {
     my $entry;
-	while((my $line = <$FASTA>) and ($n_mem<=$n_limit))
+	while((my $line = <STDIN>) and ($n_mem<=$n_limit))
 	{   
 		chomp($line);
 		if( $line =~ />/)
