@@ -75,8 +75,6 @@ print_emission_matrices();
 ## Fill the emission matrix
 sub fill_emission_matrix
 {
-    # Open FASTA file
-	open($VCF, $vcf_file) or die "Could not open file '$vcf_file' $!";
     # Process in chunks of n_limit
 	while($n_proc<$n_entries)
     {
@@ -162,7 +160,7 @@ sub initialize
 sub read_vcf
 {
     my $entry;
-	while(($n_mem<$n_limit) and (my $line = <$VCF>))
+	while(($n_mem<$n_limit) and (my $line = <STDIN>))
 	{   
 		chomp($line);
 		if( $line =~ /#/)
