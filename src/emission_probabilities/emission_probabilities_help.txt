@@ -1,16 +1,15 @@
 Description:
-    Script to learn the transition matrix out of a FASTA file.
+    Script to learn the emission probabilities out of a VCF file.
 
 Usage:
-    transition_matrix.sh  [options]  -- FASTA_FILE
+    emission_probabilities.sh  [options]  -- VCF_FILE
 
 Options:
     -h|--help           Help.
     -d|--outdir         Output directory. Default: $PWD.
-    -k|--kmer_size      K-mer size used. Default: 2.
 
 Examples:
-    transition_matrix.sh -k 3 -d out -- test.fa
+    emission_probabilities.sh -d out -- test.vcf
 
 Dependancies:
     perl{Algorithm::Combinatorics}
@@ -19,7 +18,7 @@ Upstream:
     NA
 
 Date:
-    2016/01/27
+    2016/01/30
 
 Author:
     Jordi Abante <abante.jordi@gmail.com>
