@@ -39,7 +39,7 @@ my $dim=1;                      # Dimension P (based on k-mer size)
 my @emission_matrix=();         # 3D array [assembly][row][column]
 my $n_proc=0;                   # Number of entries processed
 my $n_mem=0;                    # Number of entries stored in RAM
-my $n_limit=5;               # Limit for number of entries in RAM
+my $n_limit=2000;               # Limit for number of entries in RAM
 my $kmer_size=1;                
 
 # Time stamps
