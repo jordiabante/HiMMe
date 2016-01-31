@@ -37,7 +37,7 @@ if [ $# -eq 0 ]
         exit 1
 fi
 
-TEMP=$(getopt -o hd:t: -l help,outdir:,threads: -n "$script_name.sh" -- "$@")
+TEMP=$(getopt -o hd:t:b: -l help,outdir:,threads:,bases: -n "$script_name.sh" -- "$@")
 
 if [ $? -ne 0 ] 
 then
@@ -50,6 +50,7 @@ eval set -- "$TEMP"
 # Defaults
 outdir="$PWD"
 threads=2
+bases=1000000
 
 # Options
 while true
@@ -65,6 +66,10 @@ do
       ;;  
     -t|--threads)
       threads="$2"
+      shift 2
+      ;;  
+    -b|--bases)
+      bases="$2"
       shift 2
       ;;  
     --) 
@@ -94,5 +99,5 @@ mkdir -p "$outdir"
 n_entries="$(zcat -f "$input" | grep -v "^#" | wc -l)"
 
 # Run
-zcat -f "$input" | "$perl_script" "$input" "$n_entries" "$outfile"
+zcat -f "$input" | "$perl_script" "$input" "$n_entries" "$bases" "$outfile"
 

@@ -31,7 +31,8 @@ use Algorithm::Combinatorics qw(combinations variations_with_repetition);
 my $scriptname = $0;            # Get script name
 my $vcf_file = @ARGV[0];        # Get target FASTA file name
 my $n_entries=@ARGV[1];         # Number of entries in the FASTA file
-my $outfile= @ARGV[2];          # Output file
+my $n_bases=@ARGV[2];           # Number of bases
+my $outfile=@ARGV[3];           # Output file
 
 # Variables
 my $VCF;                        # Fasta file handler
@@ -41,6 +42,7 @@ my $n_proc=0;                   # Number of entries processed
 my $n_mem=0;                    # Number of entries stored in RAM
 my $n_limit=2000;               # Limit for number of entries in RAM
 my $kmer_size=1;                
+
 
 # Time stamps
 my $st_time=0;                  # Start time
@@ -57,15 +59,14 @@ my %transition_hash=();         # Hash containing duplets combinations
 # Read in fasta file
 $st_time = localtime;
 print STDERR "${st_time}: VCF file: ${vcf_file}\n";
-
-# emission matrices
+# Initialize matrix
 $current_time = localtime;
 print STDERR "${current_time}: Initializing emission matrix ...\n";
 initialize();
+# Count frequencies
 $current_time = localtime;
-print STDERR "${current_time}: Learning emission matrix ...\n";
+print STDERR "${current_time}: Learning emission matrix $n_bases...\n";
 fill_emission_matrix();
-
 # Print stuff
 $current_time = localtime;
 print STDERR "${current_time}: Saving emission matrix in ${outfile}...\n";
@@ -103,11 +104,11 @@ sub fill_emission_matrix
         }
     }
     printf STDERR "\n";
-    # Scale matrix
-    my $sum;
+    # Add e(i|i) and scale matrix
     for(my $i=0;$i<=$dim;$i++)
     {
-        $sum=0;
+        my $sum=0;
+        $emission_matrix[$i][$i]=$n_bases/4;
         # Count frequencies per row
         for(my $j=0;$j<=$dim;$j++)
         {
