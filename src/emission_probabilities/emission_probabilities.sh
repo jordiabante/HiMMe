@@ -50,7 +50,7 @@ eval set -- "$TEMP"
 # Defaults
 outdir="$PWD"
 threads=2
-bases=1000000
+bases=10000000
 
 # Options
 while true
@@ -90,7 +90,7 @@ input="$1"
 input_basename="$(basename "$input")"
 prefix="${input_basename%%.*}"
 tempfile="${outdir}/${prefix}"
-outfile="${outdir}/${prefix}_ep${kmer_size}.txt.gz"
+outfile="${outdir}/${prefix}_ep${bases}.txt.gz"
 
 # Output directory
 mkdir -p "$outdir"
