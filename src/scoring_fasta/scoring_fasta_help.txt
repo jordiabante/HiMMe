@@ -1,0 +1,26 @@
+Description:
+    Script to score a FASTA file containing an assembly or simply NGS reads.
+
+Usage:
+    scoring_fasta.sh  [options]  -- TRANS_MATRIX EMISSION_PROBS FASTA_FILE
+
+Options:
+    -h|--help           Help.
+    -d|--outdir         Output directory. Default: $PWD.
+    -k|--kmer_size      K-mer size used. Default: 2.
+
+Examples:
+    scoring_fasta.sh -k 4 -d out -- grch37_cdna_tm4.txt.gz grch37_all_ep2991694175.txt.gz assembly.fa
+
+Dependancies:
+    perl{Algorithm::Combinatorics}
+
+Upstream:
+    NA
+
+Date:
+    2016/02/01
+
+Author:
+    Jordi Abante <abante.jordi@gmail.com>
+    https://jordiabante.wordpress.com

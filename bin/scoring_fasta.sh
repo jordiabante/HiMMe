@@ -1,0 +1,1 @@
+../src/scoring_fasta/scoring_fasta.sh
