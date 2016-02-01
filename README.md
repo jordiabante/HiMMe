@@ -1,6 +1,6 @@
 Description
 ------------------
-Software suite that applies hidden Markov models (HMM) to transcriptome assembly assessment.
+Software suite that applies hidden Markov models (HMM) to assembly and NGS read assessment and repair.
 
 Installation
 ------------------
