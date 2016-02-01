@@ -7,7 +7,7 @@ Installation
 
 1. Clone the repository:
 
-        git clone git@github.com:jordiabante/transcriptome_hmm.git 
+        git clone git@github.com:jordiabante/ngs_hmm.git 
 
 2. Add the bin folder in the repository to your path variable by adding the following line to the `.bashrc` (`.bash_profile` in Mac) file:
 
