@@ -85,7 +85,7 @@ sub fill_markov_matrix
         my @entries=keys %fasta_hash;
         foreach my $entry (@entries)
         {
-            for(my $i=0;$i<=(scalar @{$fasta_hash{$entry}})-2*$kmer_size;$i+=$kmer_size)
+            for(my $i=0;$i<=(scalar @{$fasta_hash{$entry}})-2*$kmer_size;$i++)
             {
                 # Get nucleotides of the iteration
                 my $seq_1=@{$fasta_hash{$entry}}[$i];
