@@ -229,7 +229,7 @@ sub save_results
     {
         $sum+=$results_hash{$key};
         $n++;
-        printf OUT "$key\t%.16f",$results_hash{$key};
+        printf OUT "$key\t%.40f",$results_hash{$key};
         print OUT "\n";
     }
     my $mean=$sum/$n;
