@@ -1,13 +1,13 @@
 Description
 ------------------
-Software suite that applies hidden Markov models (HMM) to assembly and NGS read assessment and repair.
+HiMMe is a computational biology tool that applies hidden Markov models (HMM) to NGS data reliability and is able to detect errors and repair them.
 
 Installation
 ------------------
 
 1. Clone the repository:
 
-        git clone git@github.com:jordiabante/ngs_hmm.git 
+        git clone git@github.com:jordiabante/HiMMe.git 
 
 2. Add the bin folder in the repository to your path variable by adding the following line to the `.bashrc` (`.bash_profile` in Mac) file:
 

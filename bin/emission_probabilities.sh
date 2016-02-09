@@ -1,1 +1,0 @@
-../src/emission_probabilities/emission_probabilities.sh
