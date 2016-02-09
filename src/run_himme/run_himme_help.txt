@@ -1,7 +1,5 @@
 Description:
-    Script to score a FASTA file containing an assembly or simply NGS reads.
-    In addition, the script is capable of detecting erros and provides a fi-
-    le containing the corrected version.
+    Script to score a FASTA file containing NGS data in FASTA format. In addition, the script is capable of detecting erros and provides a file containing the corrected version.
 
 Usage:
     run_himme.sh  [options]  -- TRANS_MATRIX EMISSION_PROBS FASTA_FILE
