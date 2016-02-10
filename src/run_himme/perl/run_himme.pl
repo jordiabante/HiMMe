@@ -216,8 +216,10 @@ sub run_algorithm
             $pos--;
             foreach my $hidden_state (keys %{$gamma{$pos}})
             {
-                if($gamma{$pos}{$hidden_state}{score} > $viterbi_out{$entry}{$pos}{seq})
+                if($gamma{$pos}{$hidden_state}{score} > $viterbi_out{$entry}{$pos}{score})
                 {
+                    print STDERR "$hidden_state\t$gamma{$pos}{$hidden_state}{score}\n";
+                    $viterbi_out{$entry}{$pos}{score}=$gamma{$pos}{$hidden_state}{score};
                     $viterbi_out{$entry}{$pos}{seq}=$hidden_state;
                 }
             }
@@ -263,13 +265,15 @@ sub save_results
     # Loop through all contigs
     foreach my $key (sort keys %results_hash)
     {
+        my $string = sprintf('%.3e', $results_hash{$key});
+        printf OUT "$key\t$string";
+        print OUT "\n";
         $sum+=$results_hash{$key};
         $n++;
-        printf OUT "$key\t%.80f",$results_hash{$key};
-        print OUT "\n";
     }
     my $mean=$sum/$n;
-    print OUT "Mean\t$mean\n";
+    my $string = sprintf('%.3e', $mean);
+    print OUT "Mean\t$string\n";
     # Close handler
     close OUT;
     # Print corrected sequences
