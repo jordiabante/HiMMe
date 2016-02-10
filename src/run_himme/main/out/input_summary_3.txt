@@ -1,2 +1,6 @@
-random_seq_1	6.154e-47
-Mean	6.154e-47
+	2.529e-20
+random_seq_1	1.215e-19
+random_seq_2	1.250e-18
+random_seq_3	8.551e-19
+random_seq_5	1.289e-18
+Mean	7.082e-19

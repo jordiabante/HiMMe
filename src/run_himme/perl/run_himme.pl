@@ -53,7 +53,7 @@ my @markov_matrix=();           # Transition Matrix [row][column]
 my @emission_matrix=();         # Emission Matrix [row][column]
 my $n_proc=0;                   # Number of entries processed
 my $n_mem=0;                    # Number of entries stored in RAM
-my $n_limit=300;                # Limit for number of entries in RAM
+my $n_limit=25;                 # Limit for number of entries in RAM
 
 # Time stamps
 my $st_time=0;                  # Start time
@@ -76,6 +76,7 @@ my %viterbi_out=();             # Hash containing Viterbi's output
 
 ## Read input files
 $st_time = localtime;
+print STDERR "${st_time}: ${n_entries} entries to process...\n";
 print STDERR "${st_time}: Reading in transition matrix file: ${tm_file}...\n";
 read_tm();
 #print_markov_matrix();
@@ -110,6 +111,10 @@ sub run_algorithm
         read_fasta();
         # Get chromosomes from fasta
         my @entries=keys %fasta_hash;
+#        foreach my $entry (@entries)
+#        {
+#            print STDERR "$entry\n";
+#        }
         foreach my $entry (@entries)
         {
             my $n_iter=floor((scalar @{$fasta_hash{$entry}})/$kmer_size)-1;
@@ -218,7 +223,6 @@ sub run_algorithm
             {
                 if($gamma{$pos}{$hidden_state}{score} > $viterbi_out{$entry}{$pos}{score})
                 {
-                    print STDERR "$hidden_state\t$gamma{$pos}{$hidden_state}{score}\n";
                     $viterbi_out{$entry}{$pos}{score}=$gamma{$pos}{$hidden_state}{score};
                     $viterbi_out{$entry}{$pos}{seq}=$hidden_state;
                 }
@@ -249,7 +253,7 @@ sub run_algorithm
             $n_proc++;
             my $perc=$n_proc/$n_entries*100;
             printf STDERR "\rCurrent progress: %.2f%", $perc;
-            #printf STDERR "\rCurrent progress: $n_proc $n_mem $n_entries";  #%.2f%", $perc;
+            #printf STDERR "Current progress: $entry $n_proc $n_mem $n_entries\n";  #%.2f%", $perc;
         }
     }
     print STDERR "\n";
@@ -294,18 +298,19 @@ sub save_results
 sub read_fasta
 {
     my $entry;
-	while((my $line = <STDIN>) and ($n_mem<=$n_limit))
+    $n_mem=0;
+	while((my $line = <STDIN>) and ($n_mem<$n_limit))
 	{   
 		chomp($line);
 		if( $line =~ />/)
 		{   
             $entry=substr($line,1); # Get rid of leading ">" character
-            $n_mem++;
 		}   
 		else
 		{   
 		    my @array = split //, $line;
 		    push @{$fasta_hash{$entry}},@array;
+            $n_mem++;
 		}   
 	}   
 }
