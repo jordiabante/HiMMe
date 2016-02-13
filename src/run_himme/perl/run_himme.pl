@@ -53,7 +53,7 @@ my @markov_matrix=();           # Transition Matrix [row][column]
 my @emission_matrix=();         # Emission Matrix [row][column]
 my $n_proc=0;                   # Number of entries processed
 my $n_mem=0;                    # Number of entries stored in RAM
-my $n_limit=25;                 # Limit for number of entries in RAM
+my $n_limit=250;                 # Limit for number of entries in RAM
 
 # Time stamps
 my $st_time=0;                  # Start time
@@ -65,12 +65,14 @@ my $elapsed_time=0;             # Time elapsed
 my %fasta_hash=();              # Hash containing sequence info of each sample
 my %transition_hash=();         # Hash containing transition matrix
 my %emission_hash=();           # Hash containing emission probs
+my %emission_all_hash=();       # Hash containing all comb emission probs
 my %score_hash_1=();            # Hash containing scores iter n-1
 my %gamma_1=();                 # Recursive variable gamma for opt. path -1
 my %score_hash_2=();            # Hash containing scores iter n
 my %gamma=();                   # Recursive variable gamma for opt. path curr.
 my %results_hash=();            # Hash containing scores of all contig
 my %viterbi_out=();             # Hash containing Viterbi's output
+my %template_hash=();           # Hash generated based on all the combinations
 
 ################################ Main #########################################
 
@@ -87,7 +89,12 @@ read_ep();
 $current_time = localtime;
 print STDERR "${current_time}: FASTA file: ${fasta_file}\n";
 
-## Forward algorithm
+## Initialize state hash and emission all hash
+$current_time = localtime;
+print STDERR "${current_time}: Initializing...\n";
+initialize();
+
+## Run algorithm
 $current_time = localtime;
 print STDERR "${current_time}: Computing scores & optimal path...\n";
 run_algorithm();
@@ -101,9 +108,6 @@ save_results();
 ## Run forward and Viterbi algorithms
 sub run_algorithm
 {
-    # Get possible permutations of lenght k
-    my @nucleotides=('A','C','T','G');
-    my @permutations=variations_with_repetition(\@nucleotides,$kmer_size);
     # Process in chunks of n_limit
 	while($n_proc<$n_entries)
     {
@@ -111,10 +115,6 @@ sub run_algorithm
         read_fasta();
         # Get chromosomes from fasta
         my @entries=keys %fasta_hash;
-#        foreach my $entry (@entries)
-#        {
-#            print STDERR "$entry\n";
-#        }
         foreach my $entry (@entries)
         {
             my $n_iter=floor((scalar @{$fasta_hash{$entry}})/$kmer_size)-1;
@@ -131,41 +131,17 @@ sub run_algorithm
                     $seq_2=$seq_2.@{$fasta_hash{$entry}}[$i+$kmer_size+$j];
                 }
                 # Get all possible hidden states
-                foreach my $string (@permutations)
-                {
-                    my $length=$kmer_size-1;
-                    my $sequence = join('', @{$string}[0..$length]);
-                    unless(exists($score_hash_2{$sequence}))
-                    {
-                        $score_hash_2{$sequence}=1;
-                    }
-                }
+                %score_hash_2=%template_hash;
                 # In case it's the first iteration, initialize alpha
                 if($i eq 0)
                 {
-                    my @seq_1_array=split(//,$seq_1);
                     # Get all possible hidden states
-                    foreach my $string (@permutations)
-                    {
-                        my $length=$kmer_size-1;
-                        my $sequence = join('', @{$string}[0..$length]);
-                        unless(exists($score_hash_1{$sequence}))
-                        {
-                            $score_hash_1{$sequence}=1;
-                        }
-                    }
+                    %score_hash_1=%template_hash;
                     # Compute score for each hidden state
                     foreach my $hidden_state (keys %score_hash_1)
                     {
-                        my @state=split(//,$hidden_state);
                         my $pi_0=1/(4**$kmer_size);
-                        my $emission=1;
-                        for(my $j=0;$j<$kmer_size;$j++)
-                        {
-                            my $row=$emission_hash{$state[$j]};
-                            my $col=$emission_hash{$seq_1_array[$j]};
-                            $emission*=$emission_matrix[$row][$col];
-                        }
+                        my $emission=$emission_all_hash{$hidden_state}{$seq_1};
                         my $score=$pi_0*$emission;
                         $score_hash_1{$hidden_state}=$score;
                         $gamma{$pos}{$hidden_state}{score}=$score;
@@ -175,19 +151,10 @@ sub run_algorithm
                 }
                 if(length($seq_2) eq $kmer_size)
                 {
-                    # Compute alpha(n,i), n>=2
-                    my @seq_2_array=split(//,$seq_2);
-                    # Compute score for each hidden state
+                    # Consider every possible hidden state
                     foreach my $hidden_state_2 (keys %score_hash_2)
                     {
-                        my @state_2=split(//,$hidden_state_2);
-                        my $emission=1;
-                        for(my $j=0;$j<$kmer_size;$j++)
-                        {
-                            my $row=$emission_hash{$state_2[$j]};
-                            my $col=$emission_hash{$seq_2_array[$j]};
-                            $emission*=$emission_matrix[$row][$col];
-                        }
+                        my $emission=$emission_all_hash{$hidden_state_2}{$seq_2};
                         my $sum=0;
                         foreach my $hidden_state_1 (keys %score_hash_1)
                         {
@@ -215,7 +182,6 @@ sub run_algorithm
                     %score_hash_2=%score_hash_1;
                 }
                 %score_hash_1=%score_hash_2;
-                %score_hash_2=();
             }
             ## Traceback gamma
             $pos--;
@@ -253,12 +219,40 @@ sub run_algorithm
             $n_proc++;
             my $perc=$n_proc/$n_entries*100;
             printf STDERR "\rCurrent progress: %.2f%", $perc;
-            #printf STDERR "Current progress: $entry $n_proc $n_mem $n_entries\n";  #%.2f%", $perc;
         }
     }
     print STDERR "\n";
 }
 
+## Initialize stuff
+sub initialize
+{
+    # Get possible permutations of lenght k
+    my @nucleotides=('A','C','T','G');
+    my @permutations=variations_with_repetition(\@nucleotides,$kmer_size);
+    # Get all possible hidden states
+    foreach my $string_1 (@permutations)
+    {
+        my $length=$kmer_size-1;
+        my $sequence_1 = join('', @{$string_1}[0..$length]);
+        $template_hash{$sequence_1}=1;
+        foreach my $string_2 (@permutations)
+        {
+            my $length=$kmer_size-1;
+            my $sequence_2 = join('', @{$string_2}[0..$length]);
+            my $emission=1;
+            for(my $j=0;$j<$kmer_size;$j++)
+            {
+                my @state_1=split(//,$sequence_1);
+                my @state_2=split(//,$sequence_2);
+                my $row=$emission_hash{$state_1[$j]};
+                my $col=$emission_hash{$state_2[$j]};
+                $emission*=$emission_matrix[$row][$col];
+            }
+            $emission_all_hash{$sequence_1}{$sequence_2}=$emission;
+        }
+    }
+}
 ## Save results
 sub save_results
 {
