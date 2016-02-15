@@ -70,7 +70,7 @@ my %score_hash_1=();            # Hash containing scores iter n-1
 my %gamma_1=();                 # Recursive variable gamma for opt. path -1
 my %score_hash_2=();            # Hash containing scores iter n
 my %gamma=();                   # Recursive variable gamma for opt. path curr.
-my %results_hash=();            # Hash containing scores of all contig
+my %results_hash=();            # Hash containing scores of all sequences
 my %viterbi_out=();             # Hash containing Viterbi's output
 my %template_hash=();           # Hash generated based on all the combinations
 
@@ -119,7 +119,7 @@ sub run_algorithm
         {
             my $n_iter=floor((scalar @{$fasta_hash{$entry}})/$kmer_size)-1;
             my $pos=1;
-            # Loop through the contig
+            # Loop through the sequence
             for(my $i=0;$i<=$n_iter*$kmer_size;$i+=$kmer_size)
             {
                 # Get states in the iteration
@@ -260,7 +260,7 @@ sub save_results
     my $n=0;
     # Open output file
     open(OUT,">$outfile_sum") or die "Can't open file '${outfile_sum}' $!";
-    # Loop through all contigs
+    # Loop through all sequences
     foreach my $key (sort keys %results_hash)
     {
         my $string = sprintf('%.3e', $results_hash{$key});
