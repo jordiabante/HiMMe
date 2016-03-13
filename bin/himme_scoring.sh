@@ -1,0 +1,1 @@
+../src/himme_scoring/himme_scoring.sh
