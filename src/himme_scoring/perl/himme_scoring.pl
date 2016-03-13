@@ -53,7 +53,7 @@ my @markov_matrix=();           # Transition Matrix [row][column]
 my @emission_matrix=();         # Emission Matrix [row][column]
 my $n_proc=0;                   # Number of entries processed
 my $n_mem=0;                    # Number of entries stored in RAM
-my $n_limit=100;                  # Limit for number of entries in RAM
+my $n_limit=1000;               # Limit for number of entries in RAM
 
 # Time stamps
 my $st_time=0;                  # Start time
