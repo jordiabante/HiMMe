@@ -52,7 +52,8 @@ my @markov_matrix=();           # Transition Matrix [row][column]
 my @emission_matrix=();         # Emission Matrix [row][column]
 my $n_proc=0;                   # Number of entries processed
 my $n_mem=0;                    # Number of entries stored in RAM
-my $n_limit=100;               # Limit for number of entries in RAM
+my $n_limit=1000;               # Limit for number of entries in RAM
+my $still_working=1;            # Flag
 
 # Time stamps
 my $st_time=0;                  # Start time
@@ -90,7 +91,7 @@ save_results();
 sub run_algorithm
 {
     # Process in chunks of n_limit
-	while($n_proc<$n_entries)
+	while($still_working)
     {
         # Read n_lim entries
         read_fasta();
@@ -165,13 +166,7 @@ sub run_algorithm
             # CLean score hash
             %score_hash_1=();
             %score_hash_2=();
-            # Update progress
-            $n_proc++;
             print STDERR "$entry\n";
-            #$ENV{'HIMME_PROC'}++;
-            #progress_bar($ENV{'HIMME_PROC'});
-            #my $perc=$ENV{'HIMME_PROC'}/$n_entries*100;
-            #printf STDERR "\rCurrent progress: %.2f%", $perc;
         }
     }
 }
@@ -235,6 +230,10 @@ sub read_fasta
     while($n_mem<$n_limit)
     {
         my $line = <STDIN>;
+        if($line =~ /^$/)
+        {
+            $still_working=0;
+        }
         chomp($line);
         if( $line =~ />/)
         {   

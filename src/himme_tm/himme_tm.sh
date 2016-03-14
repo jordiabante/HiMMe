@@ -83,6 +83,9 @@ do
   esac
 done
 
+# Print LICENSE
+cat "${script_absdir}/../../LICENSE"
+
 # Inputs
 input="$1"
 
