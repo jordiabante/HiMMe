@@ -108,6 +108,7 @@ mkdir -p "$outdir"
 echo "[$(date)]: Counting number of contigs..."
 n_entries="$(zcat -f "$fasta_file" | grep "^>" | wc -l)"
 n_per_file="$(( $n_entries / $threads))"
+echo "[$(date)]: Total of "$n_entries" contigs..."
 
 # Split input in number of threads
 echo "[$(date)]: Parallelizing..."
