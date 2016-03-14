@@ -83,6 +83,10 @@ do
   esac
 done
 
+# Start time
+SECONDS=0
+echo "[$(date)]: Starting HiMMe..."
+
 # Inputs
 tm_file="$1"
 ep_file="$2"
@@ -102,7 +106,12 @@ n_entries="$(zcat -f "$fasta_file" | grep "^>" | wc -l)"
 
 # Split input in number of threads
 split_fasta.sh -d "$outdir" -n "$threads" -- "$fasta_file"
-fasta_files="$(ls "$outprefix"*)"
+fasta_files="$(ls "$outprefix"*.fa)"
+
+# Time elapsed
+time_elapsed="$SECONDS"
+echo "[$(date)]: Time elapsed after fasta division: $(( $time_elapsed / 3600)) h $(( $time_elapsed / 60)) m $(( $time_elapsed % 60 )) s"
+
 
 # Export variables
 export perl_script
@@ -112,18 +121,26 @@ export fasta_file
 export kmer_size
 export n_entries
 export outfile
+export HIMME_PROC=0
 
 # Run
 echo "$fasta_files" | xargs -I {file} --max-proc "$threads" bash -c  \
-    'zcat -f '{file}' | '$perl_script' '$tm_file' '$ep_file' \
-        '$fasta_file' '$kmer_size' '$n_entries' '{file}.tmp''
+    'zcat -f '{file}' | '$perl_script' '$tm_file' '$ep_file' '$fasta_file' '$kmer_size' '$n_entries' '{file}.tmp'' 2>&1 | \
+    pv -l -s "$n_entries" --timer --progress --eta --average-rate --interval 2 > /dev/null
+
+# Time elapsed
+time_elapsed="$SECONDS"
+echo -e "\n[$(date)]: Time elapsed after processing subfiles: $(( $time_elapsed / 3600)) h $(( $time_elapsed / 60)) m $(( $time_elapsed % 60 )) s"
 
 # Remove FASTA temporary files
 rm "${outprefix}"_*.fa
 
 # Merge output files
-cat "$outprefix"* | grep -v '^[[:space:]]' | sort -k 2,2n > "$outfile"
+cat "$outprefix"*tmp | grep -v '^[[:space:]]' | sort -k 2,2n > "$outfile"
 
 # Remove temporary files
 rm "${outprefix}"*.tmp
 
+# Time elapsed
+time_elapsed="$SECONDS"
+echo "[$(date)]: Total time elapsed: $(( $time_elapsed / 3600)) h $(( $time_elapsed / 60)) m $(( $time_elapsed % 60 )) s"

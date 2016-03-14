@@ -15,6 +15,7 @@ Examples:
                     grch37_all_ep2991694175.txt.gz assembly.fa
 
 Dependancies:
+    bash{pv}
     perl{Algorithm::Combinatorics}
 
 Upstream:

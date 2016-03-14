@@ -52,7 +52,7 @@ my @markov_matrix=();           # Transition Matrix [row][column]
 my @emission_matrix=();         # Emission Matrix [row][column]
 my $n_proc=0;                   # Number of entries processed
 my $n_mem=0;                    # Number of entries stored in RAM
-my $n_limit=1000;               # Limit for number of entries in RAM
+my $n_limit=100;               # Limit for number of entries in RAM
 
 # Time stamps
 my $st_time=0;                  # Start time
@@ -73,31 +73,16 @@ my %template_hash=();           # Hash generated based on all the combinations
 ################################ Main #########################################
 
 ## Read input files
-#$st_time = localtime;
-#print STDERR "${st_time}: ${n_entries} entries to process...\n";
-#print STDERR "${st_time}: Reading in transition matrix file: ${tm_file}...\n";
 read_tm();
-#print_markov_matrix();
-#$current_time = localtime;
-#print STDERR "${current_time}: Reading in emission probabilities file: ${ep_file}...\n";
 read_ep();
-#print_emission_matrix();
-#$current_time = localtime;
-#print STDERR "${current_time}: FASTA file: ${fasta_file}\n";
 
 ## Initialize state hash and emission all hash
-#$current_time = localtime;
-#print STDERR "${current_time}: Initializing...\n";
 initialize();
 
 ## Run algorithm
-#$current_time = localtime;
-#print STDERR "${current_time}: Computing scores...\n";
 run_algorithm();
 
 # Save stuff
-#$current_time = localtime;
-#print STDERR "${current_time}: Saving in ${outfile_sum}...\n";
 save_results();
 
 ############################### Subs ##########################################
@@ -182,11 +167,12 @@ sub run_algorithm
             %score_hash_2=();
             # Update progress
             $n_proc++;
-            # my $perc=$n_proc/$n_entries*100;
-            # printf STDERR "\rCurrent progress: %.2f%", $perc;
+            #$ENV{'HIMME_PROC'}++;
+            #progress_bar($ENV{'HIMME_PROC'});
+            #my $perc=$ENV{'HIMME_PROC'}/$n_entries*100;
+            #printf STDERR "\rCurrent progress: %.2f%", $perc;
         }
     }
-    #print STDERR "\n";
 }
 
 ## Initialize stuff
@@ -235,9 +221,6 @@ sub save_results
         $sum+=$results_hash{$key};
         $n++;
     }
-    my $mean=$sum/$n;
-    my $string = sprintf('%.3e', $mean);
-    #print OUT "Mean\t$string\n";
     # Close handler
     close OUT;
 }
@@ -255,6 +238,7 @@ sub read_fasta
         if( $line =~ />/)
         {   
             $entry=substr($line,1); # Get rid of leading ">" character
+            print STDERR "$entry\n";
         }   
         else
         {   
@@ -407,6 +391,24 @@ sub print_emission_matrix
 	    print OUT "\n";
 	}
     close OUT;
+}
+
+# Simple progress bar
+sub progress_bar
+{
+    my $n=shift;
+    my $progress=int($n*100/$n_entries);
+    my $done="";
+    my $left="";
+    for(my $i=1;$i<=$progress;$i++)
+    {
+        $done.="*";
+    }
+    for(my $i=$progress+1;$i<=100;$i++)
+    {
+        $left.="-";
+    }
+    print STDERR "\r$progress % [${done}${left}]";
 }
 
 ##############################################################################
