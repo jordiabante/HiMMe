@@ -20,9 +20,11 @@ Installation
 
 Dependancies
 -----------------
-1. perl{Algorithm::Combinatorics}
+1. bash{pv}
+2. bash{xargs}
+3. perl{Algorithm::Combinatorics}
 
-Usage
+Content
 -----------------
 
 1. Every folder (`script_name`) will contain the following files and directories:
