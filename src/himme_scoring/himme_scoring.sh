@@ -119,7 +119,7 @@ echo "$fasta_files" | xargs -I {file} --max-proc "$threads" bash -c  \
         '$fasta_file' '$kmer_size' '$n_entries' '{file}.tmp''
 
 # Remove FASTA temporary files
-rm "${outprefix}"*.fa
+rm "${outprefix}"_*.fa
 
 # Merge output files
 cat "$outprefix"* | grep -v '^[[:space:]]' | sort -k 2,2n > "$outfile"
