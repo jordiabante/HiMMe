@@ -130,7 +130,7 @@ echo "$fasta_files" | xargs -I {file} --max-proc "$threads" bash -c  \
 
 # Time elapsed
 time_elapsed="$SECONDS"
-echo -e "\n[$(date)]: Time elapsed after processing subfiles: $(( $time_elapsed / 3600)) h $(( $time_elapsed / 60)) m $(( $time_elapsed % 60 )) s"
+echo "[$(date)]: Time elapsed after processing subfiles: $(( $time_elapsed / 3600)) h $(( $time_elapsed / 60)) m $(( $time_elapsed % 60 )) s"
 
 # Remove FASTA temporary files
 rm "${outprefix}"_*.fa

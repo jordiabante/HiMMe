@@ -167,6 +167,7 @@ sub run_algorithm
             %score_hash_2=();
             # Update progress
             $n_proc++;
+            print STDERR "$entry\n";
             #$ENV{'HIMME_PROC'}++;
             #progress_bar($ENV{'HIMME_PROC'});
             #my $perc=$ENV{'HIMME_PROC'}/$n_entries*100;
@@ -238,7 +239,6 @@ sub read_fasta
         if( $line =~ />/)
         {   
             $entry=substr($line,1); # Get rid of leading ">" character
-            print STDERR "$entry\n";
         }   
         else
         {   
