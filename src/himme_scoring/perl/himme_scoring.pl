@@ -36,7 +36,6 @@ my $fasta_file = @ARGV[2];      # Get target FASTA file name
 my $kmer_size= @ARGV[3];        # Get user k-mer size
 my $n_entries=@ARGV[4];         # Number of entries in the FASTA file
 my $outfile_sum= @ARGV[5];      # Output file
-my $outfile_fasta= @ARGV[6];    # Output file
 
 # For testing purposes
 my $tm_outfile="out/tm_test.txt.gz";  # File to check the transition matrix
@@ -74,31 +73,31 @@ my %template_hash=();           # Hash generated based on all the combinations
 ################################ Main #########################################
 
 ## Read input files
-$st_time = localtime;
-print STDERR "${st_time}: ${n_entries} entries to process...\n";
-print STDERR "${st_time}: Reading in transition matrix file: ${tm_file}...\n";
+#$st_time = localtime;
+#print STDERR "${st_time}: ${n_entries} entries to process...\n";
+#print STDERR "${st_time}: Reading in transition matrix file: ${tm_file}...\n";
 read_tm();
 #print_markov_matrix();
-$current_time = localtime;
-print STDERR "${current_time}: Reading in emission probabilities file: ${ep_file}...\n";
+#$current_time = localtime;
+#print STDERR "${current_time}: Reading in emission probabilities file: ${ep_file}...\n";
 read_ep();
 #print_emission_matrix();
-$current_time = localtime;
-print STDERR "${current_time}: FASTA file: ${fasta_file}\n";
+#$current_time = localtime;
+#print STDERR "${current_time}: FASTA file: ${fasta_file}\n";
 
 ## Initialize state hash and emission all hash
-$current_time = localtime;
-print STDERR "${current_time}: Initializing...\n";
+#$current_time = localtime;
+#print STDERR "${current_time}: Initializing...\n";
 initialize();
 
 ## Run algorithm
-$current_time = localtime;
-print STDERR "${current_time}: Computing scores...\n";
+#$current_time = localtime;
+#print STDERR "${current_time}: Computing scores...\n";
 run_algorithm();
 
 # Save stuff
-$current_time = localtime;
-print STDERR "${current_time}: Saving in ${outfile_sum}...\n";
+#$current_time = localtime;
+#print STDERR "${current_time}: Saving in ${outfile_sum}...\n";
 save_results();
 
 ############################### Subs ##########################################
@@ -183,11 +182,11 @@ sub run_algorithm
             %score_hash_2=();
             # Update progress
             $n_proc++;
-            my $perc=$n_proc/$n_entries*100;
-            printf STDERR "\rCurrent progress: %.2f%", $perc;
+            # my $perc=$n_proc/$n_entries*100;
+            # printf STDERR "\rCurrent progress: %.2f%", $perc;
         }
     }
-    print STDERR "\n";
+    #print STDERR "\n";
 }
 
 ## Initialize stuff
@@ -219,6 +218,7 @@ sub initialize
         }
     }
 }
+
 ## Save results
 sub save_results
 {
@@ -237,7 +237,7 @@ sub save_results
     }
     my $mean=$sum/$n;
     my $string = sprintf('%.3e', $mean);
-    print OUT "Mean\t$string\n";
+    #print OUT "Mean\t$string\n";
     # Close handler
     close OUT;
 }

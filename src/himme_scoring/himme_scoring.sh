@@ -91,8 +91,8 @@ fasta_file="$3"
 # Output
 fasta_basename="$(basename "$fasta_file")"
 prefix="${fasta_basename%%.*}"
-outfile_sum="${outdir}/${prefix}_summary_${kmer_size}.txt"
-outfile_fasta="${outdir}/${prefix}_corrected_${kmer_size}.fa"
+outprefix="${outdir}/${prefix}"
+outfile="${outdir}/${prefix}_himme${kmer_size}.txt"
 
 # Output directory
 mkdir -p "$outdir"
@@ -100,7 +100,30 @@ mkdir -p "$outdir"
 # Count number of entries in FASTA
 n_entries="$(zcat -f "$fasta_file" | grep "^>" | wc -l)"
 
+# Split input in number of threads
+split_fasta.sh -d "$outdir" -n "$threads" -- "$fasta_file"
+fasta_files="$(ls "$outprefix"*)"
+
+# Export variables
+export perl_script
+export tm_file
+export ep_file
+export fasta_file
+export kmer_size
+export n_entries
+export outfile
+
 # Run
-zcat -f "$fasta_file" | "$perl_script" "$tm_file" "$ep_file" \
-    "$fasta_file" "$kmer_size" \
-    "$n_entries" "$outfile_sum" "$outfile_fasta"
+echo "$fasta_files" | xargs -I {file} --max-proc "$threads" bash -c  \
+    'zcat -f '{file}' | '$perl_script' '$tm_file' '$ep_file' \
+        '$fasta_file' '$kmer_size' '$n_entries' '{file}.tmp''
+
+# Remove FASTA temporary files
+rm "${outprefix}"*.fa
+
+# Merge output files
+cat "$outprefix"* | grep -v '^[[:space:]]' | sort -k 2,2n > "$outfile"
+
+# Remove temporary files
+rm "${outprefix}"*.tmp
+
