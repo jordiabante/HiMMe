@@ -131,7 +131,7 @@ export HIMME_PROC=0
 # Run
 echo "$fasta_files" | xargs -I {file} --max-proc "$threads" bash -c  \
     'zcat -f '{file}' | '$perl_script' '$tm_file' '$ep_file' '$fasta_file' '$kmer_size' '$n_per_file' '{file}.tmp'' 2>&1 \
-    | pv -l -s "$n_entries" -w 90 --timer --progress --eta --average-rate --interval 1 > /dev/null
+    | pv -l -s "$n_entries" -w 90 --timer --progress --eta --rate --interval 1 > /dev/null
 
 # Time elapsed
 time_elapsed="$SECONDS"
