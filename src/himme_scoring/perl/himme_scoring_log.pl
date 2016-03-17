@@ -29,48 +29,48 @@ use Algorithm::Combinatorics qw(combinations variations_with_repetition);
 use POSIX;
 
 # Read arguments
-my $scriptname = $0;            # Get script name
-my $tm_file = @ARGV[0];         # Transition matrix file name
-my $ep_file = @ARGV[1];         # Emission probabilities file name
-my $fasta_file = @ARGV[2];      # Get target FASTA file name
-my $kmer_size= @ARGV[3];        # Get user k-mer size
-my $n_entries=@ARGV[4];         # Number of entries in the FASTA file
-my $outfile_sum= @ARGV[5];      # Output file
+my $scriptname = $0;                    # Get script name
+my $tm_file = @ARGV[0];                 # Transition matrix file name
+my $ep_file = @ARGV[1];                 # Emission probabilities file name
+my $fasta_file = @ARGV[2];              # Get target FASTA file name
+my $kmer_size= @ARGV[3];                # Get user k-mer size
+my $n_entries=@ARGV[4];                 # Number of entries in the FASTA file
+my $outfile_sum= @ARGV[5];              # Output file
 
 # For testing purposes
-my $tm_outfile="out/tm_test.txt.gz";  # File to check the transition matrix
-my $ep_outfile="out/ep_test.txt.gz";  # File to check the emission probs
+my $tm_outfile="out/tm_test.txt.gz";    # File to check the transition matrix
+my $ep_outfile="out/ep_test.txt.gz";    # File to check the emission probs
 
 # Handlers
-my $FASTA;                      # Fasta file handler
-my $TM;                         # Transition matrix handler
-my $EP;                         # Emission probabilities handler
+my $FASTA;                              # Fasta file handler
+my $TM;                                 # Transition matrix handler
+my $EP;                                 # Emission probabilities handler
 
 # Variables
-my $dim=1;                      # Dimension P (based on k-mer size)
-my @markov_matrix=();           # Transition Matrix [row][column]
-my @emission_matrix=();         # Emission Matrix [row][column]
-my $n_proc=0;                   # Number of entries processed
-my $n_mem=0;                    # Number of entries stored in RAM
-my $n_limit=1000;               # Limit for number of entries in RAM
-my $still_working=1;            # Flag
-my $pi_0=1/(4**$kmer_size);     # Initial probability distribution
+my $dim=1;                              # Dimension P (based on k-mer size)
+my @markov_matrix=();                   # Transition Matrix [row][column]
+my @emission_matrix=();                 # Emission Matrix [row][column]
+my $n_proc=0;                           # Number of entries processed
+my $n_mem=0;                            # Number of entries stored in RAM
+my $n_limit=1000;                       # Limit for number of entries in RAM
+my $still_working=1;                    # Flag
+my $log_pi=log10(1/(4**$kmer_size));    # Initial probability distribution
 
 # Time stamps
-my $st_time=0;                  # Start time
-my $end_time=0;                 # End time
-my $current_time=0;             # Current time
-my $elapsed_time=0;             # Time elapsed
+my $st_time=0;                          # Start time
+my $end_time=0;                         # End time
+my $current_time=0;                     # Current time
+my $elapsed_time=0;                     # Time elapsed
 
 # Hashes
-my %fasta_hash=();              # Hash containing sequence info of each sample
-my %transition_hash=();         # Hash containing transition matrix
-my %emission_hash=();           # Hash containing emission probs
-my %emission_all_hash=();       # Hash containing all comb emission probs
-my %score_hash_1=();            # Hash containing scores iter n-1
-my %score_hash_2=();            # Hash containing scores iter n
-my %results_hash=();            # Hash containing scores of all sequences
-my %template_hash=();           # Hash generated based on all the combinations
+my %fasta_hash=();                      # Hash containing sequence info of each sample
+my %transition_hash=();                 # Hash containing transition matrix
+my %emission_hash=();                   # Hash containing emission probs
+my %emission_all_hash=();               # Hash containing all comb emission probs
+my %score_hash_1=();                    # Hash containing scores iter n-1
+my %score_hash_2=();                    # Hash containing scores iter n
+my %results_hash=();                    # Hash containing scores of all sequences
+my %template_hash=();                   # Hash generated based on all the combinations
 
 ################################ Main #########################################
 
@@ -124,7 +124,7 @@ sub run_algorithm
                     foreach my $hidden_state (keys %score_hash_1)
                     {
                         my $emission=$emission_all_hash{$hidden_state}{$seq_1};
-                        my $score=$pi_0*$emission;
+                        my $score=$log_pi+$emission;
                         $score_hash_1{$hidden_state}=$score;
                     }
                     $pos++;
@@ -141,8 +141,8 @@ sub run_algorithm
                             # Forward algorithm
                             my $row=$transition_hash{$hidden_state_1};
                             my $col=$transition_hash{$hidden_state_2};
-                            my $score=$score_hash_1{$hidden_state_1}*
-                                $markov_matrix[$row][$col]*$emission;
+                            my $score=$score_hash_1{$hidden_state_1}+
+                                $markov_matrix[$row][$col]+$emission;
                             $sum+=$score;
                         }
                         $score_hash_2{$hidden_state_2}=$sum;
@@ -194,7 +194,7 @@ sub initialize
                 my @state_2=split(//,$sequence_2);
                 my $row=$emission_hash{$state_1[$j]};
                 my $col=$emission_hash{$state_2[$j]};
-                $emission*=$emission_matrix[$row][$col];
+                $emission+=$emission_matrix[$row][$col];
             }
             $emission_all_hash{$sequence_1}{$sequence_2}=$emission;
         }
@@ -263,6 +263,7 @@ sub print_fasta
 		print "\n";
 	}
 }
+
 ## Read in transition matrix
 sub read_tm
 {
@@ -293,7 +294,7 @@ sub read_tm
                 }
                 else
                 {
-                    $markov_matrix[$i-1][$j-1]=$col;
+                    $markov_matrix[$i-1][$j-1]=log10($col);
                 }
                 $j++;
             }
@@ -354,7 +355,7 @@ sub read_ep
                 }
                 else
                 {
-                    $emission_matrix[$i-1][$j-1]=$col;
+                    $emission_matrix[$i-1][$j-1]=log10($col);
                 }
                 $j++;
             }
@@ -390,6 +391,19 @@ sub print_emission_matrix
 	    print OUT "\n";
 	}
     close OUT;
+}
+
+# Logarithm base10
+sub log10 {
+    my $n = shift;
+    if($n>0)
+    {
+        return log($n)/log(10);
+    }
+    else
+    {
+        return -10e-1000000;
+    }
 }
 
 # Simple progress bar

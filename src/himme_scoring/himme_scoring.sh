@@ -142,7 +142,7 @@ echo "[$(date)]: Collapsing output HiMMe..."
 rm "${outprefix}"_*.fa
 
 # Merge output files
-cat "$outprefix"*tmp | grep -v '^[[:space:]]' | sort -rg -k 2,2 > "$outfile"
+cat "$outprefix"*.himme.tmp | grep -v '^[[:space:]]' | sort -rg -k 2,2 > "$outfile"
 
 # Remove temporary files
 echo "[$(date)]: Cleaning..."
