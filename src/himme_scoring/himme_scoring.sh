@@ -131,8 +131,9 @@ export HIMME_PROC=0
 
 # Run
 echo "$fasta_files" | xargs -I {file} --max-proc "$threads" bash -c  \
-    'zcat -f '{file}' | '$perl_script' '$tm_file' '$ep_file' '$fasta_file' '$kmer_size' '$n_per_file' '{file}.himme.tmp'' 2>&1 \
-    | pv -l -s "$n_entries" -w 90 --force --timer --progress --eta --rate --interval 1 > /dev/null
+    'zcat -f '{file}' | '$perl_script' '$tm_file' '$ep_file' '$fasta_file' '$kmer_size' \
+                        '$n_per_file' '{file}.himme.tmp'' 2>&1 \
+    | pv -l -s "$n_entries" -w 90 --force --timer --progress --eta --rate --interval 1 >"${outprefix}_himme${kmer_size}.log"
 
 # Time elapsed
 time_elapsed="$SECONDS"
