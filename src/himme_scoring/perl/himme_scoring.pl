@@ -93,13 +93,6 @@ run_algorithm();
 save_results();
 
 ############################### Subs ##########################################
-#cmpthese
-#(-1,
-#    {
-#        join => sub {my $asign1 = join '', @{$fasta_hash{$entry}}[0 .. $kmer_size-1]},
-#        reduce => sub {my $asign2 =reduce { $a . $b } @{$fasta_hash{$entry}}[0 .. $kmer_size-1]},
-#    }
-#);
 ## Run forward and Viterbi algorithms
 sub run_algorithm
 {
