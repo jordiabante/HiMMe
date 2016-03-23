@@ -129,7 +129,7 @@ sub fill_emission_matrix
 sub initialize
 {
 	# Nucleotides taken into consideration
-	my @nucleotides=('A','C','T','G');
+	my @nucleotides=('A','C','G','T');
 	for(my $i=1;$i<=$kmer_size;$i++)
 	{
 		$dim*=(scalar @nucleotides);

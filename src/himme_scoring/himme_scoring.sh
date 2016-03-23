@@ -88,7 +88,7 @@ cat "${script_absdir}/../../LICENSE"
 
 # Start time
 SECONDS=0
-echo "[$(date)]: Starting HiMMe..."
+echo "[$(date)]: Starting HiMMe..." 
 
 # Inputs
 tm_file="$1"
@@ -99,25 +99,25 @@ fasta_file="$3"
 fasta_basename="$(basename "$fasta_file")"
 prefix="${fasta_basename%%.*}"
 outprefix="${outdir}/${prefix}"
-outfile="${outdir}/${prefix}_himme${kmer_size}.txt"
+outfile="${outdir}/${prefix}_himme${kmer_size}.txt.gz"
 
 # Output directory
 mkdir -p "$outdir"
 
 # Count number of entries in FASTA
-echo "[$(date)]: Counting number of contigs..."
+echo "[$(date)]: Counting number of entries..." 
 n_entries="$(zcat -f "$fasta_file" | grep "^>" | wc -l)"
 n_per_file="$(( $n_entries / $threads))"
-echo "[$(date)]: Total of "$n_entries" contigs..."
+echo "[$(date)]: Total of "$n_entries" entries..." 
 
 # Split input in number of threads
-echo "[$(date)]: Parallelizing..."
+echo "[$(date)]: Parallelizing..." 
 split_fasta.sh -d "$outdir" -n "$threads" -- "$fasta_file"
 fasta_files="$(ls "$outprefix"*.fa)"
 
 # Time elapsed
 time_elapsed="$SECONDS"
-echo "[$(date)]: Running HiMMe..."
+echo "[$(date)]: Running HiMMe..." 
 
 # Export variables
 export perl_script
@@ -127,28 +127,23 @@ export fasta_file
 export kmer_size
 export n_per_file
 export outfile
-export HIMME_PROC=0
 
 # Run
 echo "$fasta_files" | xargs -I {file} --max-proc "$threads" bash -c  \
     'zcat -f '{file}' | '$perl_script' '$tm_file' '$ep_file' '$fasta_file' '$kmer_size' \
-                        '$n_per_file' '{file}.himme.tmp'' 2>&1 \
-    | pv -l -s "$n_entries" -w 90 --force --timer --progress --eta --rate --interval 1 >"${outprefix}_himme${kmer_size}.log"
-
-# Time elapsed
-time_elapsed="$SECONDS"
-
-# Remove FASTA temporary files
-echo "[$(date)]: Collapsing output HiMMe..."
-rm "${outprefix}"_*.fa
+    '$n_per_file' '{file}.himme.tmp'' | pv -l -s "$n_entries" -w 90 --force --timer \
+    --progress --eta --rate --interval 1 1>/dev/null #2>"${outprefix}_himme${kmer_size}.log"
 
 # Merge output files
-cat "$outprefix"*.himme.tmp | grep -v '^[[:space:]]' | sort -rg -k 2,2 > "$outfile"
+echo "[$(date)]: Collapsing output HiMMe..."
+cat "$outprefix"*.himme.tmp | grep -v '^[[:space:]]' | sort -rg -k 2,2 | gzip > "$outfile"
 
 # Remove temporary files
 echo "[$(date)]: Cleaning..."
 rm "${outprefix}"*.himme.tmp
+rm "${outprefix}"_*.fa
 
 # Time elapsed
 time_elapsed="$SECONDS"
-echo "[$(date)]: Total time elapsed: $(( $time_elapsed / 3600)) h $(( ($time_elapsed / 60) % 60)) m $(( $time_elapsed % 60 )) s."
+echo "[$(date)]: Total time elapsed: $(( $time_elapsed / 3600)) h \
+$(( ($time_elapsed / 60) % 60)) m $(( $time_elapsed % 60 )) s."
