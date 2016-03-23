@@ -194,7 +194,7 @@ sub run_algorithm
 sub initialize
 {
     # Get possible permutations of lenght k
-    my @nucleotides=('A','C','T','G');
+    my @nucleotides=('A','C','G','T');
     my @permutations=variations_with_repetition(\@nucleotides,$kmer_size);
     # Get all possible hidden states
     foreach my $string_1 (@permutations)
@@ -285,7 +285,7 @@ sub print_fasta
 ## Read in transition matrix
 sub read_tm
 {
-    my @nucleotides=('A','C','T','G');
+    my @nucleotides=('A','C','G','T');
 	for(my $i=1;$i<=$kmer_size;$i++)
 	{
 		$dim*=(scalar @nucleotides);

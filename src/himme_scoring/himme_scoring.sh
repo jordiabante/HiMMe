@@ -99,7 +99,7 @@ fasta_file="$3"
 fasta_basename="$(basename "$fasta_file")"
 prefix="${fasta_basename%%.*}"
 outprefix="${outdir}/${prefix}"
-outfile="${outdir}/${prefix}_himme${kmer_size}.txt"
+outfile="${outdir}/${prefix}_himme${kmer_size}.txt.gz"
 
 # Output directory
 mkdir -p "$outdir"
@@ -136,7 +136,7 @@ echo "$fasta_files" | xargs -I {file} --max-proc "$threads" bash -c  \
 
 # Merge output files
 echo "[$(date)]: Collapsing output HiMMe..."
-cat "$outprefix"*.himme.tmp | grep -v '^[[:space:]]' | sort -rg -k 2,2 > "$outfile"
+cat "$outprefix"*.himme.tmp | grep -v '^[[:space:]]' | sort -rg -k 2,2 | gzip > "$outfile"
 
 # Remove temporary files
 echo "[$(date)]: Cleaning..."
