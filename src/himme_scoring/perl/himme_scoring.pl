@@ -26,6 +26,8 @@
 # Libraries
 use strict;
 use Algorithm::Combinatorics qw(combinations variations_with_repetition);
+use List::Util qw(sum reduce);
+use Benchmark qw(cmpthese);
 use POSIX;
 
 # Read arguments
@@ -52,9 +54,12 @@ my @markov_matrix=();           # Transition Matrix [row][column]
 my @emission_matrix=();         # Emission Matrix [row][column]
 my $n_proc=0;                   # Number of entries processed
 my $n_mem=0;                    # Number of entries stored in RAM
-my $n_limit=1000;               # Limit for number of entries in RAM
+my $n_limit=500;                # Limit for number of entries in RAM
 my $still_working=1;            # Flag
 my $pi_0=1/(4**$kmer_size);     # Initial probability distribution
+
+# Numerical stability
+my @scaling_factors=();         # c_t factor in Rabiner (1989)
 
 # Time stamps
 my $st_time=0;                  # Start time
@@ -88,6 +93,13 @@ run_algorithm();
 save_results();
 
 ############################### Subs ##########################################
+#cmpthese
+#(-1,
+#    {
+#        join => sub {my $asign1 = join '', @{$fasta_hash{$entry}}[0 .. $kmer_size-1]},
+#        reduce => sub {my $asign2 =reduce { $a . $b } @{$fasta_hash{$entry}}[0 .. $kmer_size-1]},
+#    }
+#);
 ## Run forward and Viterbi algorithms
 sub run_algorithm
 {
@@ -100,35 +112,36 @@ sub run_algorithm
         my @entries=keys %fasta_hash;
         foreach my $entry (@entries)
         {
-            my $n_iter=floor((scalar @{$fasta_hash{$entry}})/$kmer_size)-1;
-            my $pos=1;
+            # For some reason there are empty strings at the end
+            next if $entry eq '';
+            # Get first observation
+            my $seq_1 = join '',@{$fasta_hash{$entry}}[0 .. $kmer_size-1];
+            # Get all possible hidden states
+            %score_hash_1=%template_hash;
+            # Compute score for each hidden state
+            foreach my $hidden_state (keys %score_hash_1)
+            {
+                $score_hash_1{$hidden_state}=$pi_0*$emission_all_hash{$hidden_state}{$seq_1};
+            }
+            # Compute scaling factor
+            my $c_1=1/(sum values %score_hash_1);
+            #print STDERR "$c_1\n";
+            push @scaling_factors,$c_1;
+            foreach my $hidden_state (keys %score_hash_1)
+            {
+                $score_hash_1{$hidden_state}*=$c_1;
+                #print "$hidden_state\t$score_hash_1{$hidden_state}\n";
+            }
             # Loop through the sequence
-            for(my $i=0;$i<=$n_iter*$kmer_size;$i+=$kmer_size)
+            my $seq_length=scalar @{$fasta_hash{$entry}};
+            for(my $i=0;$i<=$seq_length-2*$kmer_size;$i+=$kmer_size)
             {
                 # Get states in the iteration
-                my $seq_1=@{$fasta_hash{$entry}}[$i];
-                my $seq_2=@{$fasta_hash{$entry}}[$i+$kmer_size];
-                for(my $j=1;$j<$kmer_size;$j++)
-                {
-                    $seq_1=$seq_1.@{$fasta_hash{$entry}}[$i+$j];
-                    $seq_2=$seq_2.@{$fasta_hash{$entry}}[$i+$kmer_size+$j];
-                }
-                # Get all possible hidden states
+                my $seq_1 = join '',@{$fasta_hash{$entry}}[$i .. $i+$kmer_size-1];
+                my $seq_2 = join '',@{$fasta_hash{$entry}}[$i+$kmer_size .. $i+2*$kmer_size-1];
+                # Get all possible hidden states i
                 %score_hash_2=%template_hash;
-                # In case it's the first iteration, initialize alpha
-                if($i eq 0)
-                {
-                    # Get all possible hidden states
-                    %score_hash_1=%template_hash;
-                    # Compute score for each hidden state
-                    foreach my $hidden_state (keys %score_hash_1)
-                    {
-                        my $emission=$emission_all_hash{$hidden_state}{$seq_1};
-                        my $score=$pi_0*$emission;
-                        $score_hash_1{$hidden_state}=$score;
-                    }
-                    $pos++;
-                }
+                # Condition to leave out last incomplete k-mer
                 if(length($seq_2) eq $kmer_size)
                 {
                     # Consider every possible hidden state
@@ -144,30 +157,36 @@ sub run_algorithm
                             my $score=$score_hash_1{$hidden_state_1}*
                                 $markov_matrix[$row][$col]*$emission;
                             $sum+=$score;
+                            #print STDERR "$hidden_state_1\t$hidden_state_2\t$score\n";
                         }
                         $score_hash_2{$hidden_state_2}=$sum;
                     }
-                    $pos++;
                 }
                 else
                 {
                     %score_hash_2=%score_hash_1;
                 }
-                %score_hash_1=%score_hash_2;
+                # Scale and copy to t-1
+                my $c_t=1/(sum values %score_hash_2);
+                # print STDERR "$c_t\n";
+                push @scaling_factors,$c_t;
+                foreach my $hidden_state (keys %score_hash_2)
+                {
+                    $score_hash_1{$hidden_state}=$score_hash_2{$hidden_state}*$c_t;
+                    #print "$hidden_state\t$score_hash_1{$hidden_state}\n";
+                }
             }
-            # Total score P(X=x|HMM)
-            my $total_score=0;
-            foreach my $kmer (keys %score_hash_1)
-            {
-                $total_score+=$score_hash_1{$kmer};
-            }
-            # Store in results hash
-            $results_hash{$entry}=$total_score;
-            # CLean score hash
+            # Total score P(Y=y|HMM) = - sum_{c_t=1}^{m}(log(c_t))
+            $results_hash{$entry} -= log $_ for @scaling_factors;
+            # Clean score hash and scoring factors
             %score_hash_1=();
             %score_hash_2=();
+            @scaling_factors=();
+            # Print to track progress
             print STDERR "$entry\n";
         }
+        # Clean fasta hash
+        %fasta_hash=();
     }
 }
 
@@ -211,7 +230,7 @@ sub save_results
     # Loop through all sequences
     foreach my $key (sort keys %results_hash)
     {
-        my $string = sprintf('%.3e', $results_hash{$key});
+        my $string = sprintf('%.3f', $results_hash{$key});
         printf OUT "$key\t$string";
         print OUT "\n";
         $sum+=$results_hash{$key};
@@ -392,22 +411,10 @@ sub print_emission_matrix
     close OUT;
 }
 
-# Simple progress bar
-sub progress_bar
+## log10 function
+sub log10 
 {
-    my $n=shift;
-    my $progress=int($n*100/$n_entries);
-    my $done="";
-    my $left="";
-    for(my $i=1;$i<=$progress;$i++)
-    {
-        $done.="*";
-    }
-    for(my $i=$progress+1;$i<=100;$i++)
-    {
-        $left.="-";
-    }
-    print STDERR "\r$progress % [${done}${left}]";
+    my $n = shift;
+    return log($n)/log(10);
 }
-
 ##############################################################################

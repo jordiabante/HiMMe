@@ -1,0 +1,10 @@
+random_seq_2	-14152.289
+random_seq_8	-14155.728
+random_seq_3	-14173.021
+random_seq_7	-14182.176
+random_seq_5	-14188.693
+random_seq_9	-14194.271
+random_seq_6	-14195.895
+random_seq_1	-14207.596
+random_seq_10	-14211.374
+random_seq_4	-14236.000
