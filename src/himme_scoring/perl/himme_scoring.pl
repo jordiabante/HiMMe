@@ -170,7 +170,8 @@ sub run_algorithm
                 }
             }
             # Total score P(Y=y|HMM) = - sum_{c_t=1}^{m}(log(c_t))
-            $results_hash{$entry} -= log $_ for @scaling_factors;
+            $results_hash{$entry}{length} = $seq_length;
+            $results_hash{$entry}{logscore} -= log $_ for @scaling_factors;
             # Clean score hash and scoring factors
             %score_hash_1=();
             %score_hash_2=();
@@ -221,10 +222,11 @@ sub save_results
     # Open output file
     open(OUT,">$outfile_sum") or die "Can't open file '${outfile_sum}' $!";
     # Loop through all sequences
-    foreach my $key (sort keys %results_hash)
+    foreach my $key (keys %results_hash)
     {
-        my $string = sprintf('%.3f', $results_hash{$key});
-        printf OUT "$key\t$string";
+        my $length = $results_hash{$key}{length};
+        my $logscore = sprintf('%.3f', $results_hash{$key}{logscore});
+        printf OUT "$key\t$length\t$logscore";
         print OUT "\n";
         $sum+=$results_hash{$key};
         $n++;

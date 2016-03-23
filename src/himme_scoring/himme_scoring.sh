@@ -136,7 +136,7 @@ echo "$fasta_files" | xargs -I {file} --max-proc "$threads" bash -c  \
 
 # Merge output files
 echo "[$(date)]: Collapsing output HiMMe..."
-cat "$outprefix"*.himme.tmp | grep -v '^[[:space:]]' | sort -rg -k 2,2 | gzip > "$outfile"
+cat "$outprefix"*.himme.tmp | sort -nr -k 3,3 | gzip > "$outfile"
 
 # Remove temporary files
 echo "[$(date)]: Cleaning..."
