@@ -183,7 +183,7 @@ sub run_algorithm
             %score_hash_2=();
             @scaling_factors=();
             # Print to track progress
-            print STDERR "$entry\n";
+            print STDOUT "$entry\n";
         }
         # Clean fasta hash
         %fasta_hash=();

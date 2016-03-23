@@ -4,8 +4,4 @@ rm -rf out
 
 set -x
 ../himme_scoring.sh -t 3 -k 1 -d out \
-    grch37_cdna_tm1.txt.gz emission_test.txt.gz input.fa
-../himme_scoring.sh -t 3 -k 2 -d out \
-    grch37_cdna_tm2.txt.gz emission_test.txt.gz input.fa
-../himme_scoring.sh -t 3 -k 3 -d out \
-    grch37_cdna_tm3.txt.gz emission_test.txt.gz input.fa
+    transition_matrix.txt.gz emission_matrix.txt.gz input.fa
