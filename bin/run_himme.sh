@@ -1,1 +1,0 @@
-../src/run_himme/run_himme.sh

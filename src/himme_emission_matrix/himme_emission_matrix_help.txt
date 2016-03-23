@@ -2,7 +2,7 @@ Description:
     Script to learn the emission probabilities out of a VCF file.
 
 Usage:
-    himme_ep.sh  [options]  -- VCF_FILE
+    himme_emission_matrix.sh  [options]  -- VCF_FILE
 
 Options:
     -h|--help           Help.
@@ -10,7 +10,7 @@ Options:
     -b|--bases          Total number of bases. Default: 1,000,000.
 
 Examples:
-    himme_ep.sh -d out -- test.vcf
+    himme_emission_matrix.sh -d out -- test.vcf
 
 Dependancies:
     perl{Algorithm::Combinatorics}

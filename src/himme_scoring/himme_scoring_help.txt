@@ -11,8 +11,7 @@ Options:
     -t|--threads        Number of threads used. Default: 2.
 
 Examples:
-    himme_scoring.sh -k 4 -d out -- grch37_cdna_tm4.txt.gz \
-                    grch37_all_ep2991694175.txt.gz assembly.fa
+    himme_scoring.sh -k 4 -d out -- tm.txt.gz em.txt.gz assembly.fa
 
 Dependancies:
     bash{pv}
@@ -22,7 +21,7 @@ Upstream:
     NA
 
 Date:
-    2016/03/11
+    2016/03/23
 
 Author:
     Jordi Abante <abante.jordi@gmail.com>
