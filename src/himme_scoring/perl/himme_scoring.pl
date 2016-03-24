@@ -107,6 +107,7 @@ sub run_algorithm
         {
             # For some reason there are empty strings at the end
             next if $entry eq '';
+            #print STDERR "$entry\n";
             # Get first observation
             my $seq_1 = join '',@{$fasta_hash{$entry}}[0 .. $kmer_size-1];
             # Get all possible hidden states
@@ -177,7 +178,7 @@ sub run_algorithm
             %score_hash_2=();
             @scaling_factors=();
             # Print to track progress
-            print STDOUT "$entry\n";
+            print STDERR "$entry\n";
         }
         # Clean fasta hash
         %fasta_hash=();
