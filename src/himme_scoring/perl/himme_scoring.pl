@@ -227,7 +227,8 @@ sub save_results
     {
         my $length = $results_hash{$key}{length};
         my $logscore = sprintf('%.3f', $results_hash{$key}{logscore});
-        printf OUT "$key\t$length\t$logscore";
+        my $norm_score = sprintf('%.3f', $results_hash{$key}{logscore}/$length);
+        printf OUT "$key\t$length\t$logscore\t$norm_score";
         print OUT "\n";
         $sum+=$results_hash{$key};
         $n++;

@@ -13,6 +13,9 @@ Options:
 Examples:
     himme_scoring.sh -k 4 -d out -- tm.txt.gz em.txt.gz assembly.fa
 
+Output:
+    contig_id   length  log_score   normalized_score
+
 Dependancies:
     bash{pv}
     perl{Algorithm::Combinatorics}
