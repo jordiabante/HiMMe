@@ -161,13 +161,17 @@ sub run_algorithm
                     %score_hash_2=%score_hash_1;
                 }
                 # Scale and copy to t-1
-                my $c_t=1/(sum values %score_hash_2);
-                # print STDERR "$c_t\n";
-                push @scaling_factors,$c_t;
-                foreach my $hidden_state (keys %score_hash_2)
+                my $summation=sum values %score_hash_2;
+                if($summation gt 0)
                 {
-                    $score_hash_1{$hidden_state}=$score_hash_2{$hidden_state}*$c_t;
-                    #print "$hidden_state\t$score_hash_1{$hidden_state}\n";
+                    my $c_t=1/$summation;
+                    # print STDERR "$c_t\n";
+                    push @scaling_factors,$c_t;
+                    foreach my $hidden_state (keys %score_hash_2)
+                    {
+                        $score_hash_1{$hidden_state}=$score_hash_2{$hidden_state}*$c_t;
+                        #print "$hidden_state\t$score_hash_1{$hidden_state}\n";
+                    }
                 }
             }
             # Total score P(Y=y|HMM) = - sum_{c_t=1}^{m}(log(c_t))
