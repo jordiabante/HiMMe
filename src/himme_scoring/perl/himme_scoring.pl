@@ -229,7 +229,7 @@ sub save_results
     # Loop through all sequences
     foreach my $key (keys %results_hash)
     {
-        my $length = $results_hash{$key}{length};
+        my $length = floor($results_hash{$key}{length}/$kmer_size);
         my $logscore = sprintf('%.3f', $results_hash{$key}{logscore});
         my $norm_score = sprintf('%.3f', $results_hash{$key}{logscore}/$length);
         printf OUT "$key\t$length\t$logscore\t$norm_score";
