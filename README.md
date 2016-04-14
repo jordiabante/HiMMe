@@ -1,3 +1,4 @@
+![alt tag](https://zenodo.org/badge/21457/jordiabante/HiMMe.svg)
 Description
 ------------------
 HiMMe is a computational biology tool that applies hidden Markov models (HMM) to assess NGS data reliability and is able to detect errors and repair them.
