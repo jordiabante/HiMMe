@@ -1,0 +1,22 @@
+Description:
+    Generates summary for HiMMe's output.
+
+Usage:
+    himme_summary .sh  [OPTIONS]  -- HIMME_OUTPUT
+
+Options:
+    -h|--help           Help
+    -d|--outdir         Output directory
+         
+Examples:
+    himme_summary.sh -d out -- input_himme1.txt.gz 
+
+Dependancies:
+    NA
+
+Date:
+    04/25/2016
+
+Author:
+    Jordi Abante <abante.jordi@gmail.com>
+    https://jordiabante.wordpress.com
