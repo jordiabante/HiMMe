@@ -15,6 +15,10 @@ out=rbind(out,c("Number of entries",n_entries))
 x_median_l=median(x[,2])
 out=rbind(out,c("Median length",x_median_l))
 
+# Length variance
+x_variance=var(x[,2])
+out=rbind(out,c("Length variance",x_variance))
+
 # Median score
 x_median_s=median(x[,3])
 out=rbind(out,c("Median score",x_median_s))
