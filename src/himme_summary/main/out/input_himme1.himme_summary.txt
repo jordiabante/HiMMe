@@ -2,6 +2,8 @@ K-mer size used	1
 Number of entries	10
 Median length	70
 Median score	-98.23
+Score variance	7.1615088888889
 Score interval [5%,95%]	-107.06408824058 , -93.2249117594202
 Median corrected score	-1.403
+Score hat variance	0.00145404444444445
 Corrected score interval [5%,95%]	-1.52907154079117 , -1.33192845920883
