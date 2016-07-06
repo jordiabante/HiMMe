@@ -112,7 +112,7 @@ echo "[$(date)]: Total of "$n_entries" entries..."
 
 # Split input in number of threads
 echo "[$(date)]: Parallelizing..." 
-split_fasta.sh -d "$outdir" -n "$threads" -- "$fasta_file"
+fasta_split.sh -d "$outdir" -n "$threads" -- "$fasta_file"
 fasta_files="$(ls "$outprefix"*.fa)"
 
 # Time elapsed
