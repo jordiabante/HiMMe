@@ -54,7 +54,8 @@ out=rbind(out,c("Corrected score interval [5%,95%]",paste(x_quantiles[1],",",x_q
 
 # HiMMe coeefficient
 zscores=(x$shat-model_mean)/model_sd
-himme_coeff=mean(zscores)/sd(zscores)
+logitz=(1)/(1+exp(-zscores))
+himme_coeff=mean(logitz)/sd(logitz)
 out=rbind(out,c("HiMMe coefficient",himme_coeff))
 
 # Save output
